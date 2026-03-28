@@ -1,0 +1,21 @@
+{
+  "url": "RO | http://gfcn-game.ly.merge.sunborngame.com/index.php/4000/Targettrain/addCollect",
+  "uid": "000000",
+  "enemies": [
+    770021,
+    770022,
+    770026,
+    770027,
+    770028,
+    770039,
+    770040,
+    770041,
+    770023,
+    770024,
+    770025,
+    770036,
+    770037
+  ],
+  "use_custom_orders": false,
+  "orders": []
+}
