@@ -15,7 +15,6 @@ class MainApp:
         self.root.title(global_i18n.get("app_title"))
         self.root.geometry("620x650")
         
-        # Setup Window Icon
         try:
             icon_path = get_resource_path("mk/icon.ico")
             self.root.iconbitmap(icon_path)
@@ -23,11 +22,28 @@ class MainApp:
             print(f"Icon missing or OS not supported: {e}")
         
         self.proxy_capture = None
+        self.active_proxies = {}  # Dictionary to coordinate proxy states
         
         self.setup_top_bar()
-        self.monitor_app = MonitorApp(self.root, self.log)
+        self.monitor_app = MonitorApp(self.root, self.log, self.update_system_proxy)
         self.train_app = TargetTrainApp(self.root, self.get_config, self.log)
         self.setup_log_area()
+
+    def update_system_proxy(self, service_name, is_active, port):
+        # Coordinator to prevent capture and monitor from fighting over system proxy
+        if is_active:
+            self.active_proxies[service_name] = port
+        else:
+            self.active_proxies.pop(service_name, None)
+
+        if not self.active_proxies:
+            set_windows_proxy(False)
+            self.log("[SYS] Windows proxy disabled.")
+        else:
+            # If multiple are active, the last updated one takes precedence
+            active_port = list(self.active_proxies.values())[-1]
+            set_windows_proxy(True, f"127.0.0.1:{active_port}")
+            self.log(f"[SYS] Windows proxy directed to 127.0.0.1:{active_port}.")
 
     def log(self, msg):
         self.root.after(0, self._append_log, msg)
@@ -63,7 +79,6 @@ class MainApp:
         self.lbl_server.grid(row=2, column=0, sticky=tk.W)
         self.var_server = tk.StringVar()
         
-        # Load from Constants
         cb = ttk.Combobox(self.frame_top, textvariable=self.var_server, values=SERVER_LIST, width=45)
         cb.grid(row=2, column=1, padx=5, pady=2)
         cb.current(0)
@@ -74,7 +89,6 @@ class MainApp:
         self.btn_stop_cap = ttk.Button(self.frame_top, text=global_i18n.get("btn_stop_capture"), command=self.stop_capture, state=tk.DISABLED)
         self.btn_stop_cap.grid(row=1, column=2, padx=5)
 
-        # Language Switch Button
         self.btn_lang = ttk.Button(self.frame_top, text=global_i18n.get("btn_lang"), command=self.switch_language)
         self.btn_lang.grid(row=2, column=2, padx=5)
 
@@ -112,16 +126,16 @@ class MainApp:
         if not self.proxy_capture:
             self.proxy_capture = GFLCaptureProxy(8080, "yundoudou", self.on_keys_captured)
             self.proxy_capture.start()
-            set_windows_proxy(True, "127.0.0.1:8080")
-            self.log("[SYS] Capture proxy started on 8080.")
+            self.update_system_proxy("capture", True, 8080)
+            self.log("[SYS] Capture proxy started on port 8080.")
             self.btn_cap.config(state=tk.DISABLED)
             self.btn_stop_cap.config(state=tk.NORMAL)
 
     def stop_capture(self):
         if self.proxy_capture:
             self.proxy_capture.stop()
-            set_windows_proxy(False)
             self.proxy_capture = None
+            self.update_system_proxy("capture", False, 8080)
             self.log("[SYS] Capture proxy stopped.")
             self.btn_cap.config(state=tk.NORMAL)
             self.btn_stop_cap.config(state=tk.DISABLED)

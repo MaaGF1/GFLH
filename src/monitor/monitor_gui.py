@@ -5,13 +5,14 @@ import time
 import json
 import tkinter as tk
 from tkinter import ttk
-from gflzirc import GFLMonitorProxy, set_windows_proxy
+from gflzirc import GFLMonitorProxy
 from utils import global_i18n
 
 class MonitorApp:
-    def __init__(self, parent, log_callback):
+    def __init__(self, parent, log_callback, proxy_callback):
         self.parent = parent
         self.log = log_callback
+        self.set_proxy_state = proxy_callback
         self.proxy_instance = None
         self.packet_counter = 1
         self.setup_ui()
@@ -53,7 +54,7 @@ class MonitorApp:
         try:
             self.proxy_instance = GFLMonitorProxy(8081, "yundoudou", self.on_traffic)
             self.proxy_instance.start()
-            set_windows_proxy(True, "127.0.0.1:8081")
+            self.set_proxy_state("monitor", True, 8081)
             self.log("[MONITOR] Started on port 8081.")
             self.btn_start.config(state=tk.DISABLED)
             self.btn_stop.config(state=tk.NORMAL)
@@ -63,8 +64,8 @@ class MonitorApp:
     def stop_monitor(self):
         if self.proxy_instance:
             self.proxy_instance.stop()
-            set_windows_proxy(False)
             self.proxy_instance = None
+            self.set_proxy_state("monitor", False, 8081)
             self.log("[MONITOR] Stopped safely.")
             self.btn_start.config(state=tk.NORMAL)
             self.btn_stop.config(state=tk.DISABLED)

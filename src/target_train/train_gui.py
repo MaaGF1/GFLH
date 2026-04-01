@@ -43,17 +43,34 @@ class TargetTrainApp:
     def run_injection(self):
         cfg = self.get_config()
         if not cfg['uid'] or not cfg['sign']:
-            self.log("[TRAIN] Missing UID or SIGN!")
+            self.log("[TRAIN] Error: Missing UID or SIGN!")
             return
 
-        enemies = [int(x.strip()) for x in self.var_enemies.get().split(",") if x.strip()]
-        orders = [int(x.strip()) for x in self.var_orders.get().split(",") if x.strip()]
+        # Safely parse enemies and orders
+        try:
+            enemies = [int(x.strip()) for x in self.var_enemies.get().split(",") if x.strip()]
+            orders = [int(x.strip()) for x in self.var_orders.get().split(",") if x.strip()]
+        except ValueError:
+            self.log("[TRAIN] Error: Invalid ID format. Please use integers separated by commas.")
+            return
+
+        if not enemies:
+            self.log("[TRAIN] Error: Enemy list is empty.")
+            return
+
+        # Safely parse server URL
+        server_str = cfg.get('server', '')
+        if " | " in server_str:
+            base_url = server_str.split(" | ")[1].strip()
+        else:
+            base_url = server_str.strip()
+
+        if not base_url:
+            self.log("[TRAIN] Error: Server URL is empty.")
+            return
 
         def worker():
             self.log("[TRAIN] Worker started...")
-            
-            # Using only the base URL from the config
-            base_url = cfg['server'].split(" | ")[1].strip()
             client = GFLClient(cfg['uid'], cfg['sign'], base_url)
             
             for idx, e_id in enumerate(enemies):
@@ -64,10 +81,14 @@ class TargetTrainApp:
                     "order_id": o_id
                 }
                 
-                # Using the imported API endpoint
-                res = client.send_request(API_TARGET_TRAIN_ADD, payload)
-                self.log(f"[TRAIN] Sent ID:{e_id} -> {res.get('success', 'Fail')}")
+                try:
+                    res = client.send_request(API_TARGET_TRAIN_ADD, payload)
+                    self.log(f"[TRAIN] Sent ID:{e_id} -> {res.get('success', 'Fail')}")
+                except Exception as e:
+                    self.log(f"[TRAIN] Request Failed for ID:{e_id} -> {e}")
+                
                 time.sleep(1)
+                
             self.log("[TRAIN] Finished injection.")
 
         threading.Thread(target=worker, daemon=True).start()

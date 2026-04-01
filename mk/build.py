@@ -22,7 +22,9 @@ def build():
         '--noconfirm',
         os.path.join(mk_dir, 'app.spec')
     ]
-    subprocess.run(pyinstaller_cmd, cwd=root_dir, shell=(os.name == 'nt'))
+    
+    # check=True to fail CI on error
+    subprocess.run(pyinstaller_cmd, cwd=root_dir, check=True)
 
 if __name__ == '__main__':
     build()
