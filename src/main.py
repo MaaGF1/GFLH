@@ -6,13 +6,21 @@ from tkinter import ttk
 from gflzirc import GFLCaptureProxy, set_windows_proxy
 from monitor.monitor_gui import MonitorApp
 from target_train.train_gui import TargetTrainApp
-from utils import global_i18n
+from include.constants import SERVER_LIST
+from utils import global_i18n, get_resource_path
 
 class MainApp:
     def __init__(self, root):
         self.root = root
         self.root.title(global_i18n.get("app_title"))
-        self.root.geometry("600x650")
+        self.root.geometry("620x650")
+        
+        # Setup Window Icon
+        try:
+            icon_path = get_resource_path("mk/icon.ico")
+            self.root.iconbitmap(icon_path)
+        except Exception as e:
+            print(f"Icon missing or OS not supported: {e}")
         
         self.proxy_capture = None
         
@@ -41,24 +49,22 @@ class MainApp:
         self.frame_top = ttk.LabelFrame(self.root, text=global_i18n.get("cfg_group"), padding=10)
         self.frame_top.pack(fill=tk.X, padx=10, pady=5)
 
-        ttk.Label(self.frame_top, text=global_i18n.get("uid")).grid(row=0, column=0, sticky=tk.W)
+        self.lbl_uid = ttk.Label(self.frame_top, text=global_i18n.get("uid"))
+        self.lbl_uid.grid(row=0, column=0, sticky=tk.W)
         self.var_uid = tk.StringVar()
         ttk.Entry(self.frame_top, textvariable=self.var_uid, width=30).grid(row=0, column=1, padx=5, pady=2)
 
-        ttk.Label(self.frame_top, text=global_i18n.get("sign")).grid(row=1, column=0, sticky=tk.W)
+        self.lbl_sign = ttk.Label(self.frame_top, text=global_i18n.get("sign"))
+        self.lbl_sign.grid(row=1, column=0, sticky=tk.W)
         self.var_sign = tk.StringVar()
         ttk.Entry(self.frame_top, textvariable=self.var_sign, width=30).grid(row=1, column=1, padx=5, pady=2)
 
-        ttk.Label(self.frame_top, text=global_i18n.get("server")).grid(row=2, column=0, sticky=tk.W)
+        self.lbl_server = ttk.Label(self.frame_top, text=global_i18n.get("server"))
+        self.lbl_server.grid(row=2, column=0, sticky=tk.W)
         self.var_server = tk.StringVar()
-        servers = [
-            "M4A1 | http://gfcn-game.gw.merge.sunborngame.com/index.php/1000/Targettrain/addCollect",
-            "AR15 | http://gfcn-game.bili.merge.sunborngame.com/index.php/5000/Targettrain/addCollect",
-            "SOP | http://gfcn-game.ios.merge.sunborngame.com/index.php/3000/Targettrain/addCollect",
-            "RO635 | http://gfcn-game.ly.merge.sunborngame.com/index.php/4000/Targettrain/addCollect",
-            "M16 | http://gfcn-game.tx.sunborngame.com/index.php/2000/Targettrain/addCollect"
-        ]
-        cb = ttk.Combobox(self.frame_top, textvariable=self.var_server, values=servers, width=45)
+        
+        # Load from Constants
+        cb = ttk.Combobox(self.frame_top, textvariable=self.var_server, values=SERVER_LIST, width=45)
         cb.grid(row=2, column=1, padx=5, pady=2)
         cb.current(0)
 
@@ -68,10 +74,33 @@ class MainApp:
         self.btn_stop_cap = ttk.Button(self.frame_top, text=global_i18n.get("btn_stop_capture"), command=self.stop_capture, state=tk.DISABLED)
         self.btn_stop_cap.grid(row=1, column=2, padx=5)
 
+        # Language Switch Button
+        self.btn_lang = ttk.Button(self.frame_top, text=global_i18n.get("btn_lang"), command=self.switch_language)
+        self.btn_lang.grid(row=2, column=2, padx=5)
+
+    def switch_language(self):
+        new_lang = "zh" if global_i18n.lang == "en" else "en"
+        global_i18n.load_lang(new_lang)
+        self.refresh_ui()
+
+    def refresh_ui(self):
+        self.root.title(global_i18n.get("app_title"))
+        self.frame_top.config(text=global_i18n.get("cfg_group"))
+        self.lbl_uid.config(text=global_i18n.get("uid"))
+        self.lbl_sign.config(text=global_i18n.get("sign"))
+        self.lbl_server.config(text=global_i18n.get("server"))
+        self.btn_cap.config(text=global_i18n.get("btn_capture"))
+        self.btn_stop_cap.config(text=global_i18n.get("btn_stop_capture"))
+        self.btn_lang.config(text=global_i18n.get("btn_lang"))
+        
+        self.monitor_app.refresh_ui()
+        self.train_app.refresh_ui()
+        self.frame_log.config(text=global_i18n.get("log_console"))
+
     def setup_log_area(self):
-        f = ttk.LabelFrame(self.root, text=global_i18n.get("log_console"), padding=5)
-        f.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
-        self.txt_log = tk.Text(f, height=10, state=tk.DISABLED)
+        self.frame_log = ttk.LabelFrame(self.root, text=global_i18n.get("log_console"), padding=5)
+        self.frame_log.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+        self.txt_log = tk.Text(self.frame_log, height=10, state=tk.DISABLED)
         self.txt_log.pack(fill=tk.BOTH, expand=True)
 
     def on_keys_captured(self, uid, sign):

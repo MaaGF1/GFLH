@@ -6,6 +6,7 @@
     "server": "服务器 URL:",
     "btn_capture": "自动捕获密钥",
     "btn_stop_capture": "停止捕获",
+    "btn_lang": "切换到英文",
     "lang": "语言:",
     "mon_group": "2. 网络监听与抓包",
     "btn_start_mon": "启动监听",

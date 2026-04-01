@@ -2,6 +2,7 @@
 
 import json
 import os
+import sys
 
 class I18nManager:
     def __init__(self, lang="en"):
@@ -23,3 +24,13 @@ class I18nManager:
         return self.strings.get(key, key)
 
 global_i18n = I18nManager("en")
+
+def get_resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        # In dev mode, we assume working dir is project root or src
+        base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    return os.path.join(base_path, relative_path)

@@ -26,6 +26,11 @@ class MonitorApp:
         self.btn_stop = ttk.Button(self.frame, text=global_i18n.get("btn_stop_mon"), command=self.stop_monitor, state=tk.DISABLED)
         self.btn_stop.pack(side=tk.LEFT, padx=5)
 
+    def refresh_ui(self):
+        self.frame.config(text=global_i18n.get("mon_group"))
+        self.btn_start.config(text=global_i18n.get("btn_start_mon"))
+        self.btn_stop.config(text=global_i18n.get("btn_stop_mon"))
+
     def on_traffic(self, direction, url, json_obj):
         if direction == "SYS":
             self.log(f"[MONITOR] Key updated - UID: {json_obj.get('uid')}")

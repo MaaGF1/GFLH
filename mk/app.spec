@@ -5,15 +5,20 @@ import os
 
 block_cipher = None
 spec_dir = SPECPATH
-src_path = os.path.abspath(os.path.join(spec_dir, '..', 'src'))
+# spec_dir is mk/, root is one level up
+root_dir = os.path.abspath(os.path.join(spec_dir, '..'))
+src_path = os.path.join(root_dir, 'src')
+
 main_script = os.path.join(src_path, 'main.py')
+icon_path = os.path.join(spec_dir, 'icon.ico')
 
 a = Analysis(
     [main_script],
     pathex=[src_path],
     binaries=[],
     datas=[
-        (os.path.join(src_path, 'conf'), 'conf')
+        (os.path.join(src_path, 'conf'), 'conf'),
+        (icon_path, 'mk')  # Put icon into mk/ folder inside the bundle so get_resource_path finds it
     ],
     hiddenimports=['gflzirc'],
     hookspath=[],
@@ -32,7 +37,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='GF1Alarm',
+    name='GFLH',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -42,7 +47,8 @@ exe = EXE(
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
-    entitlements_file=None
+    entitlements_file=None,
+    icon=icon_path
 )
 
 coll = COLLECT(
@@ -53,6 +59,6 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='GF1Alarm',
+    name='GFLH',
     contents_directory='_internal'
 )
