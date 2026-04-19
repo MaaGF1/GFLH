@@ -9,3 +9,5 @@ SERVER_LIST = [
 ]
 
 API_TARGET_TRAIN_ADD = "Targettrain/addCollect"
+
+API_TARGET_TRAIN_DEL = "Targettrain/delCollect"

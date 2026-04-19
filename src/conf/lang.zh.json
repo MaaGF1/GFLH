@@ -15,5 +15,8 @@
     "enemy_ids": "靶机 ID 列表 (英文逗号分隔):",
     "order_ids": "梯队序号列表 (英文逗号分隔):",
     "btn_inject": "开始注入靶机",
-    "log_console": "控制台日志:"
+    "log_console": "控制台日志:",
+    "btn_clear_all": "清空该账号已有靶机",
+    "btn_import_file": "从文件导入",
+    "clear_all_confirm": "确定删除所有靶机？"
 }

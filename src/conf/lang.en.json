@@ -15,5 +15,8 @@
     "enemy_ids": "Target Enemies (Comma separated):",
     "order_ids": "Order IDs (Comma separated):",
     "btn_inject": "Run Injection",
-    "log_console": "Console Log:"
+    "log_console": "Console Log:",
+    "btn_clear_all": "Clear All Captured Targets",
+    "btn_import_file": "Import from File",
+    "clear_all_confirm": "Are you sure you want to delete all displayed targets?"
 }

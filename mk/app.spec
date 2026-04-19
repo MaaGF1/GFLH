@@ -8,7 +8,6 @@ spec_dir = SPECPATH
 # spec_dir is mk/, root is one level up
 root_dir = os.path.abspath(os.path.join(spec_dir, '..'))
 src_path = os.path.join(root_dir, 'src')
-
 main_script = os.path.join(src_path, 'main.py')
 icon_path = os.path.join(spec_dir, 'icon.ico')
 
@@ -37,7 +36,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='GFLH',
+    name='GFLH-Target',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

@@ -3,11 +3,36 @@
 import sys
 import tkinter as tk
 from tkinter import ttk
-from gflzirc import GFLCaptureProxy, set_windows_proxy
+from gflzirc import GFLProxy, set_windows_proxy  
 from monitor.monitor_gui import MonitorApp
 from target_train.train_gui import TargetTrainApp
 from include.constants import SERVER_LIST
 from utils import global_i18n, get_resource_path
+
+
+class GFLCaptureProxy:
+    def __init__(self, port: int, static_key: str, callback):
+        self.port = port
+        self.static_key = static_key
+        self.callback = callback
+        self._proxy = None
+
+    def start(self):
+        def on_traffic(event_type, url, json_obj):
+            if event_type == "SYS_KEY_UPGRADE":
+                uid = json_obj.get("uid")
+                sign = json_obj.get("sign")
+                if uid and sign:
+                    self.callback(uid, sign)
+
+        self._proxy = GFLProxy(self.port, self.static_key, on_traffic)
+        self._proxy.start()
+
+    def stop(self):
+        if self._proxy:
+            self._proxy.stop()
+            self._proxy = None
+
 
 class MainApp:
     def __init__(self, root):
@@ -25,7 +50,7 @@ class MainApp:
         self.active_proxies = {}  # Dictionary to coordinate proxy states
         
         self.setup_top_bar()
-        self.monitor_app = MonitorApp(self.root, self.log, self.update_system_proxy)
+        self.monitor_app = MonitorApp(self.root, self.log, self.update_system_proxy, data_callback=self.on_monitor_data)
         self.train_app = TargetTrainApp(self.root, self.get_config, self.log)
         self.setup_log_area()
 
@@ -60,6 +85,27 @@ class MainApp:
             "sign": self.var_sign.get(),
             "server": self.var_server.get()
         }
+    
+    def on_monitor_data(self, direction, url, json_obj):
+        if direction == "S2C" and "Index/index" in url:
+            # 尝试提取 targettrain_collect_user_info
+            try:
+                if isinstance(json_obj, dict):
+                    user_info = json_obj.get("targettrain_collect_user_info")
+                    if user_info and isinstance(user_info, list):
+                        enemies = []
+                        orders = []
+                        for item in user_info:
+                            enemy_id = item.get("enemy_team_id")
+                            order_id = item.get("order_id")
+                            if enemy_id is not None and order_id is not None:
+                                enemies.append(str(enemy_id))
+                                orders.append(str(order_id))
+                        if enemies:
+                            self.train_app.set_enemies_and_orders(enemies, orders)
+                            self.log("[AUTO] Filled enemy/order IDs from login response.")
+            except Exception as e:
+                self.log(f"[AUTO] Failed to parse targettrain info: {e}")
 
     def setup_top_bar(self):
         self.frame_top = ttk.LabelFrame(self.root, text=global_i18n.get("cfg_group"), padding=10)
