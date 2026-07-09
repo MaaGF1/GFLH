@@ -1,0 +1,88 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - "v*"
+    branches:
+      - "**"
+    paths:
+      - "GFLH-TargetTrain/src/**"
+      - "GFLH-TargetTrain/mk/**"
+      - ".github/workflows/**"
+  pull_request:
+    branches:
+      - "**"
+    paths:
+      - "GFLH-TargetTrain/src/**"
+      - "GFLH-TargetTrain/mk/**"
+      - ".github/workflows/**"
+  workflow_dispatch:
+
+# Set global permission to read-only
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build Windows x86_64
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller gflzirc
+
+      - name: Build with PyInstaller
+        shell: bash
+        run: python GFLH-TargetTrain/mk/build.py
+
+      - name: Prepare Artifact
+        shell: bash
+        run: |
+              mkdir -p upload_stage
+              cp -r GFLH-TargetTrain/dist/GFLH "upload_stage/GFLH-Targettrain-win-x86_64"
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GFLH-Targettrain-win-x86_64
+          path: upload_stage
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    # Only grant write permission to the specific job that needs to create a release
+    permissions:
+      contents: write
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Zip Artifacts
+        run: |
+          mkdir -p release_assets
+          cd artifacts
+          for dir in */; do
+            dir=${dir%*/}
+            zip_name="${dir}.zip"
+            (cd "$dir" && zip -r "../../release_assets/$zip_name" .)
+          done
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release_assets/*
+          draft: false
+          prerelease: false
+          generate_release_notes: true
