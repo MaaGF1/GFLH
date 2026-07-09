@@ -1,0 +1,20 @@
+{
+    "app_title": "GFLH",
+    "cfg_group": "1. User & Server Configuration",
+    "uid": "User UID:",
+    "sign": "Sign Key:",
+    "server": "Server URL:",
+    "btn_auth_capture": "Auto Capture(UID/SIGN)",
+    "btn_full_capture": "Full Capture(UID/SIGN + Targets)",
+    "btn_stop_capture": "Stop Capture",
+    "btn_lang": "Switch to ZH",
+    "lang": "Language:",
+    "train_group": "2. Target Train Injection",
+    "enemy_ids": "Target Enemies (Comma separated):",
+    "order_ids": "Order IDs (Comma separated):",
+    "btn_inject": "Run Injection",
+    "log_console": "Console Log:",
+    "btn_clear_all": "Clear All Captured Targets",
+    "btn_import_file": "Import from File",
+    "clear_all_confirm": "Are you sure you want to delete all displayed targets?"
+}

@@ -1,0 +1,20 @@
+{
+    "app_title": "GFLH",
+    "cfg_group": "1. 用户与服务器配置",
+    "uid": "用户 UID:",
+    "sign": "签名密钥:",
+    "server": "服务器 URL:",
+    "btn_auth_capture": "自动捕获(UID/SIGN)",
+    "btn_full_capture": "完整捕获(UID/SIGN + 已有靶机)",
+    "btn_stop_capture": "停止捕获",
+    "btn_lang": "切换到英文",
+    "lang": "语言:",
+    "train_group": "2. 靶机注入系统",
+    "enemy_ids": "靶机 ID 列表 (英文逗号分隔):",
+    "order_ids": "梯队序号列表 (英文逗号分隔):",
+    "btn_inject": "开始注入靶机",
+    "log_console": "控制台日志:",
+    "btn_clear_all": "清空该账号已有靶机",
+    "btn_import_file": "从文件导入",
+    "clear_all_confirm": "确定删除所有靶机？"
+}
