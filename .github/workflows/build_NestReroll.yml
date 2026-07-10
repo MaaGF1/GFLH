@@ -3,7 +3,7 @@ name: Build and Release
 on:
   push:
     tags:
-      - "v*"
+      - "r*"
     branches:
       - "**"
     paths:
@@ -48,7 +48,7 @@ jobs:
         shell: bash
         run: |
               mkdir -p upload_stage
-              cp -r "GFLH-NestReroll/dist/GFLH "upload_stage/"GFLH-NestReroll-win-x86_64"
+              cp -r "GFLH-NestReroll/dist/GFLH" "upload_stage/"GFLH-NestReroll-win-x86_64"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
