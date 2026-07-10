@@ -14,8 +14,8 @@ on:
     branches:
       - "**"
     paths:
-      - "GFLH-TargetTrain/src/**"
-      - "GFLH-TargetTrain/mk/**"
+      - "GFLH-NestReroll/src/**"
+      - "GFLH-NestReroll/mk/**"
       - ".github/workflows/**"
   workflow_dispatch:
 
@@ -48,12 +48,12 @@ jobs:
         shell: bash
         run: |
               mkdir -p upload_stage
-              cp -r GFLH-TargetTrain/dist/GFLH "upload_stage/GFLH-Targettrain-win-x86_64"
+              cp -r "GFLH-NestReroll/dist/GFLH "upload_stage/"GFLH-NestReroll-win-x86_64"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: GFLH-Targettrain-win-x86_64
+          name: "GFLH-NestReroll-win-x86_64
           path: upload_stage
 
   release:
