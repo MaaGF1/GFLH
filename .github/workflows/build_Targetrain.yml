@@ -58,7 +58,7 @@ jobs:
 
   release:
     needs: build
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/vTarget')
     runs-on: ubuntu-latest
     # Only grant write permission to the specific job that needs to create a release
     permissions:
