@@ -48,7 +48,7 @@ jobs:
         shell: bash
         run: |
               mkdir -p upload_stage
-              cp -r GFLH-PickCoin/dist/GFLH "upload_stage/GFLH-PickCoin-win-x86_64"
+              cp -r GFLH-PickCoin/dist/GFLH-PickCoin "upload_stage/GFLH-PickCoin-win-x86_64"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
