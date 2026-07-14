@@ -51,7 +51,7 @@ jobs:
               cp -r GFLH-TargetTrain/dist/GFLH "upload_stage/GFLH-Targettrain-win-x86_64"
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@ea165f8d65b6feb2c4d1cdea76c715f49309e3d5
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: GFLH-Targettrain-win-x86_64
           path: upload_stage
