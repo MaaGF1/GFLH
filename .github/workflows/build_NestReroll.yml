@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Set up Python
-        uses: actions/setup-python@f677139bbe7af94c3610951c3a1c9ef0c63a2c12
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38
         with:
           python-version: '3.11'
 
@@ -51,7 +51,7 @@ jobs:
               cp -r "GFLH-NestReroll/dist/GFLH-NESTReroll" "upload_stage/GFLH-NestReroll-win-x86_64"
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@ff15f0306b3f739f7b6fd43fb5d26cd321bd4de5
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: "GFLH-NestReroll-win-x86_64"
           path: upload_stage
@@ -65,7 +65,7 @@ jobs:
       contents: write
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc067d23
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3
         with:
           path: artifacts
 
