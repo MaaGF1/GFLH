@@ -18,7 +18,6 @@ a = Analysis(
     pathex=[src_path],
     binaries=[],
     datas=[
-        (os.path.join(src_path, 'conf'), 'conf'),
         (icon_path, 'mk')
     ],
     hiddenimports=['gflzirc', 'json', 'time', 'threading', 'tkinter'],
