@@ -28,17 +28,17 @@ jobs:
     name: Build Windows x86_64
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38
         with:
           python-version: '3.11'
 
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller gflzirc
+          python -m pip install -r GFLH-NestReroll/mk/requirements.txt
 
       - name: Build with PyInstaller
         shell: bash
@@ -51,7 +51,7 @@ jobs:
               cp -r "GFLH-NestReroll/dist/GFLH-NESTReroll" "upload_stage/GFLH-NestReroll-win-x86_64"
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: "GFLH-NestReroll-win-x86_64"
           path: upload_stage
@@ -65,7 +65,7 @@ jobs:
       contents: write
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3
         with:
           path: artifacts
 
@@ -80,7 +80,7 @@ jobs:
           done
 
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@01570a1f39cb16869b2ab4ef6583eb0b47fc47f7
         with:
           files: release_assets/*
           draft: false

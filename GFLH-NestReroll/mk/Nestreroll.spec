@@ -17,7 +17,7 @@ a = Analysis(
     pathex=[src_path],
     binaries=[],
     datas=[
-
+        (icon_path, 'mk')
     ],
     hiddenimports=['gflzirc'],
     hookspath=[],
