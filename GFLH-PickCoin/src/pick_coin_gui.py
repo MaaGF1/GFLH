@@ -214,66 +214,82 @@ class PickCoinApp:
         return []  
 
     def farm_worker(self):
-
         import os
-        os.environ['HTTP_PROXY'] = ''
-        os.environ['HTTPS_PROXY'] = ''
-        os.environ['http_proxy'] = ''
-        os.environ['https_proxy'] = ''
+        import traceback
 
-        uid = self.var_uid.get().strip()
-        sign = self.var_sign.get().strip()
-        server_str = self.var_server.get().strip()
-        if " | " in server_str:
-            base_url = server_str.split(" | ")[1]
-        else:
-            base_url = server_str
+        try:
+            os.environ['HTTP_PROXY'] = ''
+            os.environ['HTTPS_PROXY'] = ''
+            os.environ['http_proxy'] = ''
+            os.environ['https_proxy'] = ''
 
-        if not uid or not sign or not base_url:
-            self.log("[ERROR] UID/SIGN/Server missing. Please capture or input manually.")
-            self.root.after(0, self._reset_ui_after_stop)
-            return
+            uid = self.var_uid.get().strip()
+            sign = self.var_sign.get().strip()
+            server_str = self.var_server.get().strip()
+            if " | " in server_str:
+                base_url = server_str.split(" | ")[1]
+            else:
+                base_url = server_str
 
-        team_id = self.var_team_id.get()
-        macro_loops = self.var_macro_loops.get()
-        missions_per_retire = self.var_missions_per_retire.get()
+            try:
+                team_id = self.var_team_id.get()
+                macro_loops = self.var_macro_loops.get()
+                missions_per_retire = self.var_missions_per_retire.get()
+            except tk.TclError as e:
+                self.log(f"[ERROR] Please type in valid integers: {e}")
+                self.root.after(0, self._reset_ui_after_stop)
+                return
 
-        self.log("=== GFL Protocol Auto-Farming Started (Mission 10352) ===")
-        self.log(f"Team ID: {team_id}, MACRO_LOOPS: {macro_loops}, MISSIONS_PER_RETIRE: {missions_per_retire}")
+            if not uid or not sign or not base_url:
+                self.log("[ERROR] UID/SIGN/Server missing. Please capture or input manually.")
+                self.root.after(0, self._reset_ui_after_stop)
+                return
 
-        client = GFLClient(uid, sign, base_url)
-        stop_macro = False
-        stop_micro = False
+            team_id = self.var_team_id.get()
+            macro_loops = self.var_macro_loops.get()
+            missions_per_retire = self.var_missions_per_retire.get()
 
-        for macro in range(1, macro_loops + 1):
-            if stop_macro or self.stop_flag:
-                break
-            self.log(f"\n--- MACRO BATCH {macro} / {macro_loops} ---")
-            batch_guns = []
-            for micro in range(1, missions_per_retire + 1):
-                if stop_micro or self.stop_flag:
+            self.log("=== GFL Protocol Auto-Farming Started (Mission 10352) ===")
+            self.log(f"Team ID: {team_id}, MACRO_LOOPS: {macro_loops}, MISSIONS_PER_RETIRE: {missions_per_retire}")
+
+            client = GFLClient(uid, sign, base_url)
+            stop_macro = False
+            stop_micro = False
+
+            for macro in range(1, macro_loops + 1):
+                if stop_macro or self.stop_flag:
                     break
-                self.log(f"\n[*] Starting Micro Run {micro} / {missions_per_retire} ...")
-                dropped = self.farm_mission(client, team_id)
-                if dropped is None:
-                    self.log("[-] Run failed or aborted. Aborting mission...")
-                    client.send_request(API_MISSION_ABORT, {"mission_id": MISSION_ID})
-                    time.sleep(3)
-                    continue
-                batch_guns.extend(dropped)
-                time.sleep(0.2)
-            
-            if batch_guns:
-                self.log(f"[*] Submitting {len(batch_guns)} T-Dolls for Auto-Retire...")
-                resp = client.send_request(API_GUN_RETIRE, batch_guns)
-                if resp.get("success"):
-                    self.log("[+] Auto-Retire Successful!")
-                else:
-                    self.log(f"[-] Retire Failed: {resp}")
-            time.sleep(1)
+                self.log(f"\n--- MACRO BATCH {macro} / {macro_loops} ---")
+                batch_guns = []
+                for micro in range(1, missions_per_retire + 1):
+                    if stop_micro or self.stop_flag:
+                        break
+                    self.log(f"\n[*] Starting Micro Run {micro} / {missions_per_retire} ...")
+                    dropped = self.farm_mission(client, team_id)
+                    if dropped is None:
+                        self.log("[-] Run failed or aborted. Aborting mission...")
+                        client.send_request(API_MISSION_ABORT, {"mission_id": MISSION_ID})
+                        time.sleep(3)
+                        continue
+                    batch_guns.extend(dropped)
+                    time.sleep(0.2)
+                
+                if batch_guns:
+                    self.log(f"[*] Submitting {len(batch_guns)} T-Dolls for Auto-Retire...")
+                    resp = client.send_request(API_GUN_RETIRE, batch_guns)
+                    if resp.get("success"):
+                        self.log("[+] Auto-Retire Successful!")
+                    else:
+                        self.log(f"[-] Retire Failed: {resp}")
+                time.sleep(1)
 
-        self.log("\n[*] Farming runs ended.")
-        self.root.after(0, self._reset_ui_after_stop)
+            self.log("\n[*] Farming runs ended.")
+            self.root.after(0, self._reset_ui_after_stop)
+        
+        except Exception as e:
+            self.log(f"[Error] farm_worker error: {e}")
+            traceback.print_exc()
+            self.root.after(0, self._reset_ui_after_stop)
 
     def _reset_ui_after_stop(self):
         self.btn_start.config(state=tk.NORMAL)
