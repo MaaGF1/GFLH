@@ -80,7 +80,7 @@ jobs:
           done
 
       - name: Create Release
-        uses: softprops/action-gh-release@01570a1f39cb16869b2ab4ef6583eb0b47fc47f7
+        uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda
         with:
           files: release_assets/*
           draft: false
