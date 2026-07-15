@@ -98,8 +98,11 @@ class PickCoinApp:
         self.txt_log.pack(fill=tk.BOTH, expand=True)
 
     def log(self, msg):
-        
-        self.root.after(0, self._append_log, msg)
+        try:
+            if self.root.winfo_exists():
+                self.root.after(0, self._append_log, msg)
+        except tk.TclError:
+            pass
 
     def _append_log(self, msg):
         self.txt_log.config(state=tk.NORMAL)
@@ -292,6 +295,15 @@ class PickCoinApp:
             self.root.after(0, self._reset_ui_after_stop)
 
     def _reset_ui_after_stop(self):
+        try:
+            if not self.root.winfo_exists():
+                return
+            self.btn_start.config(state=tk.NORMAL)
+            self.btn_stop.config(state=tk.DISABLED)
+            self.stop_flag = False
+            self.worker_thread = None
+        except tk.TclError:
+            pass
         self.btn_start.config(state=tk.NORMAL)
         self.btn_stop.config(state=tk.DISABLED)
         self.stop_flag = False
@@ -317,6 +329,8 @@ class PickCoinApp:
     def on_close(self):
         self.stop_capture()
         self.stop_flag = True
+        if self.worker_thread and self.worker_thread.is_alive():
+            self.worker_thread.join(timeout=2.0)
         self.root.destroy()
 
 if __name__ == "__main__":
