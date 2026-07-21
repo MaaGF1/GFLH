@@ -295,63 +295,72 @@ class F2PAutoApp:
             self.log(f"[-] Retire Failed: {resp}")
 
     def farming_worker(self):
-        uid = self.var_uid.get().strip()
-        sign = self.var_sign.get().strip()
-        server_str = self.var_server.get().strip()
-        if " | " in server_str:
-            base_url = server_str.split(" | ")[1]
-        else:
-            base_url = server_str
-        if not uid or not sign or not base_url:
-            self.log("[ERROR] UID/SIGN/Server missing. Please capture or input.")
-            self.root.after(0, self._reset_ui)
-            return
-
-        squad_id_str = self.var_squad_id.get().strip()
-        if not squad_id_str:
-            self.log("[ERROR] Squad ID missing. Please capture or input.")
-            self.root.after(0, self._reset_ui)
-            return
         try:
-            squad_id = int(squad_id_str)
-        except:
-            self.log("[ERROR] Invalid Squad ID (must be integer).")
-            self.root.after(0, self._reset_ui)
-            return
+            self.log("[DEBUG] farming_worker entered")
+            uid = self.var_uid.get().strip()
+            sign = self.var_sign.get().strip()
+            server_str = self.var_server.get().strip()
+            if " | " in server_str:
+                base_url = server_str.split(" | ")[1].strip()
+            else:
+                base_url = server_str.strip()
+            if not uid or not sign or not base_url:
+                self.log("[ERROR] UID/SIGN/Server missing. Please capture or input.")
+                self.root.after(0, self._reset_ui)
+                return
 
-        macro_loops = self.var_macro_loops.get()
-        missions_per_retire = self.var_missions_per_retire.get()
+            squad_id_str = self.var_squad_id.get().strip()
+            if not squad_id_str:
+                self.log("[ERROR] Squad ID missing. Please capture or input.")
+                self.root.after(0, self._reset_ui)
+                return
+            try:
+                squad_id = int(squad_id_str)
+            except ValueError:
+                self.log("[ERROR] Invalid Squad ID (must be integer).")
+                self.root.after(0, self._reset_ui)
+                return
 
-        upstream = self.var_upstream_proxy.get().strip()
-        proxies = {"http": upstream, "https": upstream} if upstream else None
+            try:
+                macro_loops = int(self.var_macro_loops.get())
+                missions_per_retire = int(self.var_missions_per_retire.get())
+            except (ValueError, TypeError) as e:
+                self.log(f"[ERROR] Invalid loop count or missions per retire: {e}")
+                self.root.after(0, self._reset_ui)
+                return
 
-        client = GFLClient(uid, sign, base_url, proxies=proxies)
+            client = GFLClient(uid, sign, base_url)
 
-        self.log("=== GFL Protocol Auto-Farming Started (Mission 11880) ===")
-        self.log(f"Macro Loops: {macro_loops}, Missions per Retire: {missions_per_retire}, Squad ID: {squad_id}")
+            self.log("=== GFL Protocol Auto-Farming Started (Mission 11880) ===")
+            self.log(f"Macro Loops: {macro_loops}, Missions per Retire: {missions_per_retire}, Squad ID: {squad_id}")
 
-        for macro in range(1, macro_loops + 1):
-            if self.stop_flag:
-                break
-            self.log(f"\n--- MACRO BATCH {macro} / {macro_loops} ---")
-            batch_guns = []
-            for micro in range(1, missions_per_retire + 1):
+            for macro in range(1, macro_loops + 1):
                 if self.stop_flag:
                     break
-                self.log(f"\n[*] Starting Micro Run {micro} / {missions_per_retire} ...")
-                dropped = self.farm_mission(client, squad_id)
-                if dropped is None:
-                    self.log("[-] Run failed or aborted. Aborting mission...")
-                    client.send_request(API_MISSION_ABORT, {"mission_id": MISSION_ID})
-                    time.sleep(3)
-                    continue
-                batch_guns.extend(dropped)
-                time.sleep(1)
-            self.retire_guns(client, batch_guns)
-            time.sleep(2)
+                self.log(f"\n--- MACRO BATCH {macro} / {macro_loops} ---")
+                batch_guns = []
+                for micro in range(1, missions_per_retire + 1):
+                    if self.stop_flag:
+                        break
+                    self.log(f"\n[*] Starting Micro Run {micro} / {missions_per_retire} ...")
+                    dropped = self.farm_mission(client, squad_id)
+                    if dropped is None:
+                        self.log("[-] Run failed or aborted. Aborting mission...")
+                        client.send_request(API_MISSION_ABORT, {"mission_id": MISSION_ID})
+                        time.sleep(3)
+                        continue
+                    batch_guns.extend(dropped)
+                    time.sleep(1)
+                self.retire_guns(client, batch_guns)
+                time.sleep(2)
 
-        self.log("\n[*] Farming runs ended.")
-        self.root.after(0, self._reset_ui)
+            self.log("\n[*] Farming runs ended.")
+        except Exception as e:
+            self.log(f"[ERROR] Farming worker crashed: {e}")
+            import traceback
+            self.log(traceback.format_exc())
+        finally:
+            self.root.after(0, self._reset_ui)
 
     def _reset_ui(self):
         self.btn_start.config(state=tk.NORMAL)
@@ -360,9 +369,16 @@ class F2PAutoApp:
         self.worker_thread = None
 
     def start_farming(self):
+        self.log("[DEBUG] start_farming called")
         if self.worker_thread and self.worker_thread.is_alive():
             self.log("[WARN] Farming already running.")
             return
+        # 如果捕获线程还在运行，先停止
+        if self.capture_thread and self.capture_thread.is_alive():
+            self.log("[WARN] Capture thread still running, stopping it first.")
+            self.stop_capture()
+            self.capture_thread.join(timeout=2)
+        # 确保代理已停止
         if self.proxy_instance:
             self.proxy_instance.stop()
             set_windows_proxy(False)
@@ -371,8 +387,10 @@ class F2PAutoApp:
         self.stop_flag = False
         self.btn_start.config(state=tk.DISABLED)
         self.btn_stop.config(state=tk.NORMAL)
+        self.log("[DEBUG] Starting farming thread...")
         self.worker_thread = threading.Thread(target=self.farming_worker, daemon=True)
         self.worker_thread.start()
+        self.log("[DEBUG] Farming thread started.")
 
     def stop_farming(self):
         self.stop_flag = True
