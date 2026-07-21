@@ -48,7 +48,7 @@ jobs:
         shell: bash
         run: |
               mkdir -p upload_stage
-              cp -r GFLH-TargetTrain/dist/GFLH "upload_stage/GFLH-Targettrain-win-x86_64"
+              cp -r GFLH-TargetTrain/dist/GFLH-TargetTrain "upload_stage/GFLH-Targettrain-win-x86_64"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
