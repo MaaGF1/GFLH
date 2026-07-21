@@ -58,6 +58,6 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='GFLH',
+    name='GFLH-TargetTrain',
     contents_directory='_internal'
 )
