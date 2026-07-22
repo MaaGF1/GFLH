@@ -1,6 +1,6 @@
 # f2p_gui.py
 
-
+import os
 import sys
 import time
 import json
@@ -17,6 +17,13 @@ from gflzirc import (
     API_MISSION_ABORT, API_GUN_RETIRE, GUIDE_COURSE_11880,
 )
 
+def get_resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except AttributeError:
+        base_path = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(base_path, relative_path)
+
 
 API_INDEX = "Index/index"
 
@@ -29,12 +36,14 @@ class F2PAutoApp:
         self.root = root
         self.root.title("GFLH - F2P")
         self.root.geometry("700x700")
-        try:
-            self.root.iconbitmap("mk/icon.ico")
-        except:
-            pass
-
-    
+        icon_path = get_resource_path("mk/icon.ico")
+        if os.path.exists(icon_path):
+            try:
+                self.root.iconbitmap(icon_path)
+            except Exception as e:
+                print(f"Set icon failed: {e}")
+            else:
+                print(f"Icon not found: {icon_path}")
         self.proxy_instance = None
         self.active_proxy = False
         self.stop_flag = False
