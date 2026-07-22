@@ -12,10 +12,16 @@ from gflzirc import (
     API_MISSION_COMBINFO, API_MISSION_START, API_MISSION_ABORT,
 )
 
-# ========== 配置常量 ==========
+def get_resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except AttributeError:
+        base_path = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(base_path, relative_path)
+
 MISSION_ID = 10508
 START_SPOT = 91501
-# 1box 目标点位
+
 TARGET_1BOX_SPOTS = [91508, 91517]
 TARGET_2BOX_PAIRS = [
     (91508, 91517),
@@ -28,20 +34,23 @@ RETRY_DELAY = 0.1
 
 SERVER_ITEMS = [f"{name} | {url}" for name, url in SERVERS.items()]
 
-# ========== GUI 主类 ==========
+
 class RerollApp:
     def __init__(self, root):
         self.root = root
         self.root.title("GFLH - Hornet's Nest Reroll")
         self.root.geometry("620x550")
-        try:
-            self.root.iconbitmap("mk/icon.ico")
-        except:
-            pass
-
-        # 全局状态
-        self.proxy_capture = None      # 捕获代理实例
-        self.active_proxy = False      # 系统代理是否被本工具开启
+        icon_path = get_resource_path("mk/icon.ico")
+        if os.path.exists(icon_path):
+            try:
+                self.root.iconbitmap(icon_path)
+            except Exception as e:
+                print(f"Set icon failed: {e}")
+            else:
+                print(f"Icon not found: {icon_path}")
+   
+        self.proxy_capture = None     
+        self.active_proxy = False      
         self.stop_flag = False
         self.reroll_thread = None
 
@@ -49,7 +58,7 @@ class RerollApp:
         self.setup_control_panel()
         self.setup_log_area()
 
-    # ---------- UI 构建 ----------
+
     def setup_top_bar(self):
         self.frame_top = ttk.LabelFrame(self.root, text="1. 用户配置", padding=10)
         self.frame_top.pack(fill=tk.X, padx=10, pady=5)
@@ -165,7 +174,7 @@ class RerollApp:
         return True
 
     def reroll_worker(self):
-        # 清除代理环境变量
+   
         os.environ['HTTP_PROXY'] = ''
         os.environ['HTTPS_PROXY'] = ''
         os.environ['http_proxy'] = ''
@@ -175,7 +184,7 @@ class RerollApp:
         sign = self.var_sign.get().strip()
         server_str = self.var_server.get().strip()
 
-        # 解析纯 URL（支持 "名称 | URL" 或 "名称|URL" 格式）
+    
         if '|' in server_str:
             base_url = server_str.split('|', 1)[1].strip()
         else:
@@ -202,7 +211,7 @@ class RerollApp:
             attempt += 1
             self.log(f"\n[Attempt {attempt}]")
 
-            # combinationInfo
+
             comb_resp = client.send_request(API_MISSION_COMBINFO, {"mission_id": MISSION_ID})
             if "error" in comb_resp or "error_local" in comb_resp:
                 self.log(f"[COMBINFO] Failed: {comb_resp}, retrying...")
@@ -278,7 +287,7 @@ class RerollApp:
         self.stop_flag = True
         self.root.destroy()
 
-# ========== 主入口 ==========
+
 if __name__ == "__main__":
     root = tk.Tk()
     app = RerollApp(root)
