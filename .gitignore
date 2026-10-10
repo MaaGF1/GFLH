@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# PyInstaller / build output (per subproject)
+GFLH-*/build/
+GFLH-*/dist/
+
+# Runtime config written next to the GUI script
+GFLH-Greyzone/src/greyzone_gui_config.json
+GFLH-FriendPraise/src/friendpraise_gui_config.json
