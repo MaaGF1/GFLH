@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>地图表格 · 少女前线</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">GFL</span>
+      <span class="brand-text">地图表格</span>
+    </div>
+    <div class="toolbar">
+      <label class="select-label">
+        地图
+        <select id="mission-select"></select>
+      </label>
+      <input id="filter" type="search" autocomplete="off" placeholder="筛选编号 / 名称 / 编成…">
+    </div>
+  </header>
+
+  <main id="app">
+    <div id="loading" class="placeholder">正在读取数据…</div>
+    <div id="error" class="error" hidden></div>
+    <div id="content" hidden>
+      <section class="hero">
+        <div class="crumbs" id="crumbs"></div>
+        <div class="hero-row">
+          <h1 id="title"></h1>
+          <div class="chips" id="chips"></div>
+        </div>
+        <p class="desc" id="desc"></p>
+      </section>
+
+      <section class="cards" id="cards"></section>
+
+      <div class="layout">
+        <section class="panel">
+          <h2>关卡信息</h2>
+          <div id="info"></div>
+        </section>
+        <section class="panel">
+          <h2>节点拓扑</h2>
+          <div id="topology" class="topology"></div>
+          <div class="legend" id="legend"></div>
+        </section>
+      </div>
+
+      <section class="panel">
+        <h2>敌方梯队 / 站位 <span class="count" id="enemy-count"></span></h2>
+        <div class="table-wrap" id="enemy-table"></div>
+        <p class="note">效能列优先采用游戏内 <code>effect_ext</code> 展示值，鼠标悬停可看按公式换算的 600 / 300 系数结果；点击任意一行查看该梯队的单位明细，再点一次收起。</p>
+        <div id="unit-detail" class="unit-detail"></div>
+      </section>
+
+      <section class="panel">
+        <h2>节点列表 <span class="count" id="node-count"></span></h2>
+        <div class="table-wrap tall" id="node-table"></div>
+      </section>
+
+      <section class="panel">
+        <h2>建筑 <span class="count" id="building-count"></span></h2>
+        <div class="table-wrap" id="building-table"></div>
+      </section>
+
+      <section class="panel">
+        <h2>传送 <span class="count" id="portal-count"></span></h2>
+        <div class="table-wrap" id="portal-table"></div>
+      </section>
+
+      <footer class="foot">
+        <span id="meta"></span>
+        <span>数据源：本地 GFLData（<code>tables/extract.py</code> 生成）</span>
+      </footer>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+
+</body>
+
+</html>

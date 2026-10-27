@@ -1,0 +1,5 @@
+# requirements.txt
+pyinstaller==6.17.0
+gflzirc==0.4.4
+pywebview==6.1
+pythonnet==3.0.5

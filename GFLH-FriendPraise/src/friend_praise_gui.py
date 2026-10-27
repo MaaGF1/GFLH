@@ -23,8 +23,13 @@ import time
 import tkinter as tk
 from tkinter import messagebox, ttk
 
+try:
+    import winreg
+except ImportError:          # 非 Windows 平台
+    winreg = None
+
 from gflzirc import (
-    GFLClient, GFLProxy, set_windows_proxy,
+    GFLClient, GFLProxy,
     SERVERS, STATIC_KEY, DEFAULT_SIGN,
 )
 
@@ -119,6 +124,122 @@ def set_account(uid, sign, target_user_id=None):
             TARGET_USER_ID = 0
     else:
         TARGET_USER_ID = target_user_id
+
+
+def read_system_proxy():
+    """
+    读回 Windows 系统代理的真实状态，返回 (ProxyEnable, ProxyServer)，读不到返回 None。
+
+    这个值直接决定游戏会不会把请求发给捕获代理：
+      * 未开启 → 游戏直连服务器，什么都捕获不到；
+      * 已开启，但游戏是在开启之前就已经启动并连上服务器的话，
+        那条已经建立的连接会继续直连（代理只影响之后新建的连接）。
+    """
+    if winreg is None:
+        return None
+    try:
+        path = r"Software\Microsoft\Windows\CurrentVersion\Internet Settings"
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, path, 0, winreg.KEY_READ) as key:
+            try:
+                enable = winreg.QueryValueEx(key, "ProxyEnable")[0]
+            except FileNotFoundError:
+                enable = None
+            try:
+                server = winreg.QueryValueEx(key, "ProxyServer")[0]
+            except FileNotFoundError:
+                server = None
+        return enable, server
+    except OSError:
+        return None
+
+
+def system_proxy_text():
+    state = read_system_proxy()
+    if state is None:
+        return "系统代理: 读不到"
+    enable, server = state
+    return "系统代理: %s %s" % ("已开启" if enable else "未开启", server or "(无地址)")
+
+
+INTERNET_SETTINGS_KEY = r"Software\Microsoft\Windows\CurrentVersion\Internet Settings"
+
+# 用提权进程写代理时传给自己的参数
+ELEVATED_PROXY_FLAG = "--set-system-proxy"
+
+
+def is_elevated():
+    """当前进程是否以管理员身份运行。"""
+    try:
+        import ctypes
+        return bool(ctypes.windll.shell32.IsUserAnAdmin())
+    except Exception:                              # noqa: BLE001
+        return False
+
+
+def request_elevated_set_proxy(port):
+    """
+    请求 UAC 提权，用另一个进程把系统代理打开。
+
+    背景：实测部分机器上以普通权限运行打包后的 exe 时，写
+    HKCU\\...\\Internet Settings 会被拒绝（WinError 5），
+    而以管理员身份运行则成功。这里在失败时兜一个提权路径：
+    弹出 UAC，同意后由提权进程写注册表。
+
+    返回 (是否成功, 说明)。成功后会再读一次注册表确认真的是开的。
+    """
+    if winreg is None:
+        return False, "当前平台不支持 winreg"
+    try:
+        exe = sys.executable
+        if getattr(sys, "frozen", False):
+            params = "%s %d" % (ELEVATED_PROXY_FLAG, port)
+        else:
+            params = '"%s" %s %d' % (os.path.abspath(__file__), ELEVATED_PROXY_FLAG, port)
+    except Exception as exc:                       # noqa: BLE001
+        return False, "无法构造提权命令: %s" % exc
+
+    try:
+        import ctypes
+        rc = ctypes.windll.shell32.ShellExecuteW(None, "runas", exe, params, None, 1)
+    except Exception as exc:                       # noqa: BLE001
+        return False, "调用 UAC 失败: %s" % exc
+
+    if rc <= 32:
+        if rc == 1223:
+            return False, "你取消了 UAC 提权。"
+        return False, "提权启动失败 (ShellExecuteW 返回 %d)" % rc
+
+    for _ in range(20):
+        time.sleep(0.25)
+        state = read_system_proxy()
+        if state and state[0]:
+            return True, "已通过管理员权限设置系统代理。"
+    return False, "提权进程已启动，但系统代理仍未开启（可能被安全软件拦截）。"
+
+
+def set_system_proxy(enable, proxy_addr="127.0.0.1:8081"):
+    """
+    开关 Windows 系统代理，返回 (是否成功, 失败原因)。
+
+    gflzirc 自带的 set_windows_proxy() 把所有异常都吞掉、只返回 False，
+    出错时完全看不到原因（实测：某些机器上非管理员运行会被拒绝，但报不出是谁拒绝的）。
+    这里自己写注册表并回报真实原因，便于排查。
+    """
+    if winreg is None:
+        return False, "当前平台不支持 winreg"
+    try:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, INTERNET_SETTINGS_KEY, 0,
+                            winreg.KEY_WRITE) as key:
+            if enable:
+                winreg.SetValueEx(key, "ProxyEnable", 0, winreg.REG_DWORD, 1)
+                winreg.SetValueEx(key, "ProxyServer", 0, winreg.REG_SZ, proxy_addr)
+            else:
+                winreg.SetValueEx(key, "ProxyEnable", 0, winreg.REG_DWORD, 0)
+    except OSError as exc:
+        return False, "%s (WinError %s)" % (exc.strerror or exc, exc.winerror)
+    except Exception as exc:                       # noqa: BLE001 - 需要看到任何异常
+        return False, "%s: %s" % (type(exc).__name__, exc)
+    return True, ""
 
 
 def check_step_error(resp: dict, step_name: str) -> bool:
@@ -337,6 +458,7 @@ LANG = {
         "lang": "语言:",
         "btn_capture": "自动捕获密钥",
         "btn_stop_capture": "停止捕获",
+        "btn_refresh_proxy": "检查系统代理",
         "sec_run": "2. 操作",
         "btn_start": "开始点赞",
         "btn_stop": "停止",
@@ -365,6 +487,7 @@ LANG = {
         "lang": "Language:",
         "btn_capture": "Capture Key",
         "btn_stop_capture": "Stop Capture",
+        "btn_refresh_proxy": "Check proxy",
         "sec_run": "2. Actions",
         "btn_start": "Start Praise",
         "btn_stop": "Stop",
@@ -411,9 +534,11 @@ class FriendPraiseApp:
         self.var_server = tk.StringVar(value=server_item_from_url(BASE_URL))
         self.var_target = tk.StringVar(value="0")
         self.var_lang = tk.StringVar(value="zh")
+        self.var_proxy = tk.StringVar(value=system_proxy_text())
 
         self._build_ui()
         self._load_config()
+        self._refresh_proxy_label()
 
         LOG_SINK = self._log_from_thread
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
@@ -483,11 +608,17 @@ class FriendPraiseApp:
         cmb_lang.grid(row=4, column=1, padx=5, pady=2, sticky=tk.W)
         cmb_lang.bind("<<ComboboxSelected>>", self._on_lang_change)
 
+        # 系统代理的真实状态：捕获不到 key 时先看这一行
+        ttk.Label(f, textvariable=self.var_proxy, foreground="#555555").grid(
+            row=5, column=0, columnspan=3, sticky=tk.W, pady=(4, 0))
+
         self.btn_cap = ttk.Button(f, text=self.text["btn_capture"], command=self.start_capture)
         self.btn_cap.grid(row=0, column=2, padx=6, pady=2)
         self.btn_stop_cap = ttk.Button(f, text=self.text["btn_stop_capture"],
                                        command=self.stop_capture, state=tk.DISABLED)
         self.btn_stop_cap.grid(row=1, column=2, padx=6, pady=2)
+        ttk.Button(f, text=self.text["btn_refresh_proxy"],
+                   command=self._refresh_proxy_label).grid(row=2, column=2, padx=6, pady=2)
 
     def _build_run_frame(self):
         f = ttk.LabelFrame(self.root, text=self.text["sec_run"], padding=10)
@@ -625,17 +756,54 @@ class FriendPraiseApp:
         try:
             self.proxy_instance = GFLProxy(PROXY_PORT, STATIC_KEY, self._capture_callback)
             self.proxy_instance.start()
-            set_windows_proxy(True, "127.0.0.1:%d" % PROXY_PORT)
+            ok, reason = set_system_proxy(True, "127.0.0.1:%d" % PROXY_PORT)
+
+            if not ok:
+                # 实测：部分机器上普通权限运行打包后的 exe 会被拒绝（WinError 5），
+                # 管理员身份则成功。这里直接给出提权补救，而不是只报个错。
+                self._append_log("[!] 系统代理设置失败：%s" % reason)
+                self._append_log("[!] 这通常是权限问题（UAC / 安全软件）。"
+                                 "正在尝试用管理员权限重新设置……")
+                elevated_ok, elevated_reason = request_elevated_set_proxy(PROXY_PORT)
+                self._append_log("[%s] %s" % ("CAPTURE" if elevated_ok else "!",
+                                              elevated_reason))
+                ok = elevated_ok
+
             self.active_proxy = True
             self._set_btn("btn_cap", tk.DISABLED)
             self._set_btn("btn_stop_cap", tk.NORMAL)
             self._set_status(self.text["status_capture"].format(p=PROXY_PORT))
-            self._append_log("[CAPTURE] Proxy started on port %d; Windows proxy SET."
-                             % PROXY_PORT)
-            self._append_log("[CAPTURE] Please log in to the game to capture UID and SIGN.")
+            self._append_log("[CAPTURE] Proxy started on port %d." % PROXY_PORT)
+
+            # 把系统代理的真实状态读回来看，而不是假定设置成功
+            self._refresh_proxy_label()
+            if not ok:
+                self._append_log("[!] 系统代理仍未开启，游戏不会走捕获代理，抓不到 UID/SIGN。")
+                self._append_log("[!] 兜底办法：手动开「设置 → 网络和 Internet → 代理 → "
+                                 "手动设置代理」，填 127.0.0.1:%d 并保存，然后重新登录游戏。"
+                                 % PROXY_PORT)
+            elif not self._proxy_is_on():
+                self._append_log("[!] 注册表写入返回成功，但 ProxyEnable 仍不是 1，"
+                                 "可能被其它软件（如 Fiddler / 安全软件）改回去了：%s"
+                                 % system_proxy_text())
+            else:
+                self._append_log("[CAPTURE] %s" % system_proxy_text())
+                self._append_log("[CAPTURE] 现在在游戏里退出登录、重新登录一次"
+                                 "（会产生新的连接，代理才会生效）。")
         except Exception as exc:
             self._append_log("[!] Failed to start proxy: %s" % exc)
             self.proxy_instance = None
+
+    @staticmethod
+    def _proxy_is_on():
+        state = read_system_proxy()
+        return bool(state and state[0])
+
+    def _refresh_proxy_label(self):
+        try:
+            self.var_proxy.set(system_proxy_text())
+        except (AttributeError, tk.TclError):
+            pass
 
     def _capture_callback(self, event_type, url, data):
         if event_type != "SYS_KEY_UPGRADE" or not isinstance(data, dict):
@@ -665,11 +833,14 @@ class FriendPraiseApp:
             self.proxy_instance.stop()
             self.proxy_instance = None
         if self.active_proxy:
-            set_windows_proxy(False)
+            ok, reason = set_system_proxy(False)
+            if not ok:
+                self._append_log("[!] 还原系统代理失败：%s" % reason)
             self.active_proxy = False
         self._set_btn("btn_cap", tk.NORMAL)
         self._set_btn("btn_stop_cap", tk.DISABLED)
         self._set_status(self.text["status_idle"])
+        self._refresh_proxy_label()
         self._append_log("[CAPTURE] Proxy stopped; Windows proxy restored.")
 
     # ---------- 点赞 ----------
@@ -754,6 +925,18 @@ class FriendPraiseApp:
 
 
 def main():
+    # 提权副本：只负责把系统代理打开，然后立刻退出（不开窗口、不跑好友互动）。
+    # 由 request_elevated_set_proxy() 通过 UAC 启动。
+    if ELEVATED_PROXY_FLAG in sys.argv:
+        idx = sys.argv.index(ELEVATED_PROXY_FLAG)
+        try:
+            port = int(sys.argv[idx + 1])
+        except (IndexError, ValueError):
+            port = PROXY_PORT
+        ok, reason = set_system_proxy(True, "127.0.0.1:%d" % port)
+        log_line("[ELEVATED] set_system_proxy(port=%d) -> %s %s" % (port, ok, reason))
+        sys.exit(0 if ok else 1)
+
     root = tk.Tk()
     FriendPraiseApp(root)
     root.mainloop()

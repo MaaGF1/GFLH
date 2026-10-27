@@ -1,0 +1,263 @@
+.eselect {
+    display: inline-block;
+    position: relative;
+    vertical-align: middle;
+    padding: 0 20px 0 0;
+    overflow: hidden;
+    background-color: #E0E0E0;
+    transition: box-shadow 0.25s ease;
+    z-index: 2;
+}
+.eselect:before {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 0;
+    border: 6px solid transparent;
+    border-top-color: #000000ad;
+    top: 15px;
+    right: 10px;
+    cursor: pointer;
+    z-index: -2;
+}
+.eselect select {
+    cursor: pointer;
+    padding: 10px;
+    width: 100%;
+    border: none;
+    background: transparent;
+    background-image: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.eselect select:focus {
+    outline: none;
+}
+
+#packselect input[type="checkbox"]:checked + label{
+    color: black;
+    background: #E0E0E0;
+    border: double;
+    padding: 4.5px 3px;
+}
+
+#packselect input[type="checkbox"] + label{
+    position: relative;
+    vertical-align: middle;
+    padding: 5.5px 5px;
+    margin: 0px 2px;
+    display: inline-block;
+    font-size: 13px;
+    color: #E0E0E0;
+    border: 1px solid #E0E0E0;
+    width: 16px;
+    text-align: center;
+    cursor: pointer;
+}
+
+#packselect input[type="checkbox"]{
+    display: none;
+}
+body {
+  display: flex;
+  font-size: .99vw;
+  flex-direction: column;
+  align-items: center;
+  background-color: #333333;
+  font-family: 'Noto Sans', 'Noto Sans SC', sans-serif;
+  color: #EAEAEA;
+}
+table {
+  display: block;
+  max-height: 70vw;
+  overflow: scroll;
+}
+thead {
+  display: table-header-group;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+tbody {
+  display: table-row-group;
+}
+tr {
+  display: table-row;
+}
+th, td {
+  padding: 8px 6px;
+  position: relative;
+}
+th {
+  vertical-align: middle;
+}
+
+#thisdiv {
+  width: 80%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+#campaignchose, #mapsetdiv {
+  width: 100%; 
+}
+.mapsetbtncontainer {
+  display: inline-block;
+  margin: 3px 20px 3px 0;
+}
+.mapsetbtn {
+  margin: 2px 0;
+}
+header {
+  margin: 20px;
+}
+header > h1 {
+  margin-block-start: 0;
+  margin-block-end: 0;
+  display: inline-block;
+  color: rgb(244, 196, 48);
+  font-size: 5rem;
+  margin-right: 10px;
+}
+header .textboxcontainer {
+  display: inline-block;
+  margin: -5px 0;
+}
+header .textbox {
+  margin: 5px 0;
+  border: 1px solid rgb(234, 234, 234);
+  padding: 5px 10px;
+  background-color: rgb(244, 196, 48);
+  color: black;
+}
+#enemyposition {
+  width: 100%;
+}
+#teleportshow, #buildingshow, #missionshow, #enemyshow {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.note {
+  margin: 10px 0;
+  width: 1200px;
+}
+
+.mission-spawn-separator {
+  border-bottom: 2px solid rgba(244, 196, 48, 0.2);
+  background-color: rgba(244, 196, 48, 0.8);
+  color: black;
+  text-align: center;
+}
+
+/*-- 刷怪图例 --*/
+.spawnlegend {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 2px 0 6px;
+  color: #b9b9b9;
+  font-size: 13px;
+  user-select: none;
+}
+
+.spawnlegend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.spawnlegend i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-style: normal;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.spawnlegend .chip-initial {
+  background: #111111;
+  border: 1px solid #f4c430;
+  color: #ffffff;
+}
+
+.spawnlegend .chip-spawn {
+  background: #c2410c;
+  border: 1px solid #ffb066;
+  color: #ffffff;
+}
+
+.spawnlegend .chip-third {
+  background: #1d3a5c;
+  border: 1px solid #7fb2e8;
+  color: #ffffff;
+}
+
+/*-- 刷怪标记的悬停提示 --*/
+#spawn-tooltip {
+  position: fixed;
+  z-index: 9999;
+  min-width: 220px;
+  max-width: 420px;
+  padding: 10px 12px;
+  background: #111111f2;
+  border: 1px solid #f4c430cc;
+  border-radius: 6px;
+  color: #eaeaea;
+  font-family: 'Noto Sans', 'Noto Sans SC', sans-serif;
+  font-size: 13px;
+  line-height: 1.55;
+  pointer-events: none;
+  box-shadow: 0 8px 24px #00000099;
+}
+
+#spawn-tooltip .tip-title {
+  color: #f4c430;
+  font-weight: 700;
+}
+
+#spawn-tooltip .tip-sub {
+  color: #9a9a9a;
+  font-size: 11px;
+  margin-bottom: 6px;
+}
+
+#spawn-tooltip dl {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 3px 12px;
+  margin: 0;
+}
+
+#spawn-tooltip dt {
+  color: #9a9a9a;
+  white-space: nowrap;
+}
+
+#spawn-tooltip dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+@media only screen and (max-width: 1000px) {
+  body {
+    display: flex;
+    font-size: 28px;
+  }
+  .note {
+    width: 100%;
+    font-size: 24px;
+  }
+  #thisdiv, #missiondrawing, .staticbottomtext {
+    width: 100% !important;
+  }
+  #otherthing div, .staticbottomtext div {
+    font-size: 28px;
+  }
+}
+

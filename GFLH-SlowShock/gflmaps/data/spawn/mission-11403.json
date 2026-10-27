@@ -1,0 +1,579 @@
+{
+ "missionId": 11403,
+ "turn": 1,
+ "generatedAt": "2026-10-27T08:32:48+08:00",
+ "sources": [
+  "0039_S2C_4000_Mission_teamMove_1792629961.json",
+  "0189_S2C_5000_Mission_startTurn_1793005345.json"
+ ],
+ "initial": [
+  {
+   "instanceId": 1,
+   "teamId": 6589201,
+   "spotId": 67554,
+   "birthTurn": 1,
+   "ai": 102,
+   "aiPara": "@67554,5",
+   "hpPercent": 1,
+   "bossHp": "0",
+   "resolvedBy": "ai_para"
+  },
+  {
+   "instanceId": 2,
+   "teamId": 6589202,
+   "spotId": 67556,
+   "birthTurn": 1,
+   "ai": 102,
+   "aiPara": "@67556,5",
+   "hpPercent": 1,
+   "bossHp": "0",
+   "resolvedBy": "ai_para"
+  },
+  {
+   "instanceId": 3,
+   "teamId": 6589217,
+   "spotId": 67571,
+   "birthTurn": 1,
+   "ai": 0,
+   "aiPara": "",
+   "hpPercent": 1,
+   "bossHp": "0",
+   "resolvedBy": "team_order"
+  },
+  {
+   "instanceId": 4,
+   "teamId": 6589218,
+   "spotId": 67572,
+   "birthTurn": 1,
+   "ai": 0,
+   "aiPara": "",
+   "hpPercent": 1,
+   "bossHp": "0",
+   "resolvedBy": "team_order"
+  },
+  {
+   "instanceId": 5,
+   "teamId": 6589214,
+   "spotId": 67577,
+   "birthTurn": 1,
+   "ai": 0,
+   "aiPara": "",
+   "hpPercent": 1,
+   "bossHp": "0",
+   "resolvedBy": "night_enemy"
+  },
+  {
+   "instanceId": 6,
+   "teamId": 6589214,
+   "spotId": 67579,
+   "birthTurn": 1,
+   "ai": 0,
+   "aiPara": "",
+   "hpPercent": 1,
+   "bossHp": "0",
+   "resolvedBy": "team_order"
+  },
+  {
+   "instanceId": 7,
+   "teamId": 6589203,
+   "spotId": 67580,
+   "birthTurn": 1,
+   "ai": 102,
+   "aiPara": "@67580,5",
+   "hpPercent": 1,
+   "bossHp": "0",
+   "resolvedBy": "ai_para"
+  },
+  {
+   "instanceId": 8,
+   "teamId": 6589204,
+   "spotId": 67585,
+   "birthTurn": 1,
+   "ai": 102,
+   "aiPara": "@67585,5",
+   "hpPercent": 1,
+   "bossHp": "0",
+   "resolvedBy": "ai_para"
+  },
+  {
+   "instanceId": 9,
+   "teamId": 6589217,
+   "spotId": 67593,
+   "birthTurn": 1,
+   "ai": 0,
+   "aiPara": "",
+   "hpPercent": 1,
+   "bossHp": "0",
+   "resolvedBy": "team_order"
+  },
+  {
+   "instanceId": 10,
+   "teamId": 6589216,
+   "spotId": 67595,
+   "birthTurn": 1,
+   "ai": 0,
+   "aiPara": "",
+   "hpPercent": 1,
+   "bossHp": "0",
+   "resolvedBy": "night_enemy"
+  },
+  {
+   "instanceId": 11,
+   "teamId": 6589902,
+   "spotId": 67598,
+   "birthTurn": 1,
+   "ai": 103,
+   "aiPara": "",
+   "hpPercent": 1,
+   "bossHp": "225000",
+   "resolvedBy": "night_enemy"
+  },
+  {
+   "instanceId": 12,
+   "teamId": 6589213,
+   "spotId": 67600,
+   "birthTurn": 1,
+   "ai": 0,
+   "aiPara": "",
+   "hpPercent": 1,
+   "bossHp": "0",
+   "resolvedBy": "team_order"
+  },
+  {
+   "instanceId": 13,
+   "teamId": 6589212,
+   "spotId": 67603,
+   "birthTurn": 1,
+   "ai": 0,
+   "aiPara": "",
+   "hpPercent": 1,
+   "bossHp": "0",
+   "resolvedBy": "night_enemy"
+  },
+  {
+   "instanceId": 14,
+   "teamId": 6589216,
+   "spotId": 67606,
+   "birthTurn": 1,
+   "ai": 0,
+   "aiPara": "",
+   "hpPercent": 1,
+   "bossHp": "0",
+   "resolvedBy": "night_enemy"
+  },
+  {
+   "instanceId": 15,
+   "teamId": 6589215,
+   "spotId": 67608,
+   "birthTurn": 1,
+   "ai": 0,
+   "aiPara": "",
+   "hpPercent": 1,
+   "bossHp": "0",
+   "resolvedBy": "night_enemy"
+  },
+  {
+   "instanceId": 16,
+   "teamId": 6589211,
+   "spotId": 67614,
+   "birthTurn": 1,
+   "ai": 0,
+   "aiPara": "",
+   "hpPercent": 1,
+   "bossHp": "0",
+   "resolvedBy": "night_enemy"
+  },
+  {
+   "instanceId": 17,
+   "teamId": 6589212,
+   "spotId": 67662,
+   "birthTurn": 1,
+   "ai": 0,
+   "aiPara": "",
+   "hpPercent": 1,
+   "bossHp": "0",
+   "resolvedBy": "team_order"
+  },
+  {
+   "instanceId": 18,
+   "teamId": 6589215,
+   "spotId": 67674,
+   "birthTurn": 1,
+   "ai": 0,
+   "aiPara": "",
+   "hpPercent": 1,
+   "bossHp": "0",
+   "resolvedBy": "night_enemy"
+  },
+  {
+   "instanceId": 19,
+   "teamId": 6589212,
+   "spotId": 67684,
+   "birthTurn": 1,
+   "ai": 0,
+   "aiPara": "",
+   "hpPercent": 1,
+   "bossHp": "0",
+   "resolvedBy": "team_order"
+  },
+  {
+   "instanceId": 20,
+   "teamId": 6589220,
+   "spotId": 67686,
+   "birthTurn": 1,
+   "ai": 0,
+   "aiPara": "",
+   "hpPercent": 1,
+   "bossHp": "0",
+   "resolvedBy": "team_order"
+  },
+  {
+   "instanceId": 21,
+   "teamId": 6589219,
+   "spotId": 67689,
+   "birthTurn": 1,
+   "ai": 0,
+   "aiPara": "",
+   "hpPercent": 1,
+   "bossHp": "0",
+   "resolvedBy": "team_order"
+  },
+  {
+   "instanceId": 22,
+   "teamId": 6589207,
+   "spotId": 67690,
+   "birthTurn": 1,
+   "ai": 102,
+   "aiPara": "@67690,5",
+   "hpPercent": 1,
+   "bossHp": "0",
+   "resolvedBy": "ai_para"
+  },
+  {
+   "instanceId": 23,
+   "teamId": 6589219,
+   "spotId": 67694,
+   "birthTurn": 1,
+   "ai": 0,
+   "aiPara": "",
+   "hpPercent": 1,
+   "bossHp": "0",
+   "resolvedBy": "team_order"
+  },
+  {
+   "instanceId": 24,
+   "teamId": 6589206,
+   "spotId": 67696,
+   "birthTurn": 1,
+   "ai": 102,
+   "aiPara": "@67696,4",
+   "hpPercent": 1,
+   "bossHp": "0",
+   "resolvedBy": "ai_para"
+  },
+  {
+   "instanceId": 25,
+   "teamId": 6589219,
+   "spotId": 67698,
+   "birthTurn": 1,
+   "ai": 0,
+   "aiPara": "",
+   "hpPercent": 1,
+   "bossHp": "0",
+   "resolvedBy": "team_order"
+  },
+  {
+   "instanceId": 26,
+   "teamId": 6589220,
+   "spotId": 67700,
+   "birthTurn": 1,
+   "ai": 0,
+   "aiPara": "",
+   "hpPercent": 1,
+   "bossHp": "0",
+   "resolvedBy": "team_order"
+  },
+  {
+   "instanceId": 28,
+   "teamId": 6589218,
+   "spotId": 67592,
+   "birthTurn": 1,
+   "ai": 0,
+   "aiPara": "",
+   "hpPercent": 1,
+   "bossHp": "0",
+   "resolvedBy": "team_order"
+  }
+ ],
+ "spawns": [
+  {
+   "instanceId": 9,
+   "allyInstanceId": 9,
+   "teamId": 6589222,
+   "spotId": 67670,
+   "birthTurn": 0,
+   "ai": 102,
+   "aiPara": "@67670,99",
+   "resolvedBy": "ai_para"
+  },
+  {
+   "instanceId": 10,
+   "allyInstanceId": 10,
+   "teamId": 6589221,
+   "spotId": 67691,
+   "birthTurn": 0,
+   "ai": 102,
+   "aiPara": "@67691,99",
+   "resolvedBy": "ai_para"
+  },
+  {
+   "instanceId": 11,
+   "allyInstanceId": 11,
+   "teamId": 6589222,
+   "spotId": 67702,
+   "birthTurn": 0,
+   "ai": 102,
+   "aiPara": "@67702,99",
+   "resolvedBy": "ai_para"
+  },
+  {
+   "instanceId": 12,
+   "allyInstanceId": 12,
+   "teamId": 6589227,
+   "spotId": 67664,
+   "birthTurn": 0,
+   "ai": 102,
+   "aiPara": "@67664,99",
+   "resolvedBy": "ai_para"
+  },
+  {
+   "instanceId": 13,
+   "allyInstanceId": 13,
+   "teamId": 6589227,
+   "spotId": 67666,
+   "birthTurn": 0,
+   "ai": 102,
+   "aiPara": "@67666,99",
+   "resolvedBy": "ai_para"
+  },
+  {
+   "instanceId": 14,
+   "allyInstanceId": 14,
+   "teamId": 6589228,
+   "spotId": 67667,
+   "birthTurn": 0,
+   "ai": 102,
+   "aiPara": "@67667,99",
+   "resolvedBy": "ai_para"
+  },
+  {
+   "instanceId": 15,
+   "allyInstanceId": 15,
+   "teamId": 6589234,
+   "spotId": 67672,
+   "birthTurn": 0,
+   "ai": 102,
+   "aiPara": "@67672,99",
+   "resolvedBy": "ai_para"
+  },
+  {
+   "instanceId": 16,
+   "allyInstanceId": 16,
+   "teamId": 6589234,
+   "spotId": 67673,
+   "birthTurn": 0,
+   "ai": 102,
+   "aiPara": "@67673,99",
+   "resolvedBy": "ai_para"
+  },
+  {
+   "instanceId": 17,
+   "allyInstanceId": 17,
+   "teamId": 6589233,
+   "spotId": 67675,
+   "birthTurn": 0,
+   "ai": 102,
+   "aiPara": "@67675,99",
+   "resolvedBy": "ai_para"
+  },
+  {
+   "instanceId": 18,
+   "allyInstanceId": 18,
+   "teamId": 6589233,
+   "spotId": 67676,
+   "birthTurn": 0,
+   "ai": 102,
+   "aiPara": "@67676,99",
+   "resolvedBy": "ai_para"
+  },
+  {
+   "instanceId": 19,
+   "allyInstanceId": 19,
+   "teamId": 6589240,
+   "spotId": 67561,
+   "birthTurn": 0,
+   "ai": 102,
+   "aiPara": "@67561,99",
+   "resolvedBy": "ai_para"
+  },
+  {
+   "instanceId": 20,
+   "allyInstanceId": 20,
+   "teamId": 6589240,
+   "spotId": 67562,
+   "birthTurn": 0,
+   "ai": 102,
+   "aiPara": "@67562,99",
+   "resolvedBy": "ai_para"
+  },
+  {
+   "instanceId": 21,
+   "allyInstanceId": 21,
+   "teamId": 6589240,
+   "spotId": 67563,
+   "birthTurn": 0,
+   "ai": 102,
+   "aiPara": "@67563,99",
+   "resolvedBy": "ai_para"
+  },
+  {
+   "instanceId": 22,
+   "allyInstanceId": 22,
+   "teamId": 6589240,
+   "spotId": 67564,
+   "birthTurn": 0,
+   "ai": 102,
+   "aiPara": "@67564,99",
+   "resolvedBy": "ai_para"
+  },
+  {
+   "instanceId": 23,
+   "allyInstanceId": 23,
+   "teamId": 6589245,
+   "spotId": 67565,
+   "birthTurn": 0,
+   "ai": 102,
+   "aiPara": "@67565,99",
+   "resolvedBy": "ai_para"
+  },
+  {
+   "instanceId": 24,
+   "allyInstanceId": 24,
+   "teamId": 6589245,
+   "spotId": 67566,
+   "birthTurn": 0,
+   "ai": 102,
+   "aiPara": "@67566,99",
+   "resolvedBy": "ai_para"
+  },
+  {
+   "instanceId": 25,
+   "allyInstanceId": 25,
+   "teamId": 6589246,
+   "spotId": 67567,
+   "birthTurn": 0,
+   "ai": 102,
+   "aiPara": "@67567,99",
+   "resolvedBy": "ai_para"
+  },
+  {
+   "instanceId": 26,
+   "allyInstanceId": 26,
+   "teamId": 6589245,
+   "spotId": 67568,
+   "birthTurn": 0,
+   "ai": 102,
+   "aiPara": "@67568,99",
+   "resolvedBy": "ai_para"
+  }
+ ],
+ "third": [
+  {
+   "instanceId": 1,
+   "allyInstanceId": 1,
+   "teamId": 6589209,
+   "spotId": 67570,
+   "birthTurn": 0,
+   "ai": 102,
+   "aiPara": "@67570,99",
+   "resolvedBy": "ai_para"
+  },
+  {
+   "instanceId": 2,
+   "allyInstanceId": 2,
+   "teamId": 6589210,
+   "spotId": 67589,
+   "birthTurn": 0,
+   "ai": 102,
+   "aiPara": "@67589,99",
+   "resolvedBy": "ai_para"
+  },
+  {
+   "instanceId": 3,
+   "allyInstanceId": 3,
+   "teamId": 6589205,
+   "spotId": 67661,
+   "birthTurn": 0,
+   "ai": 102,
+   "aiPara": "@67661,99",
+   "resolvedBy": "ai_para"
+  },
+  {
+   "instanceId": 4,
+   "allyInstanceId": 4,
+   "teamId": 6589208,
+   "spotId": 67693,
+   "birthTurn": 0,
+   "ai": 102,
+   "aiPara": "@67693,99",
+   "resolvedBy": "ai_para"
+  },
+  {
+   "instanceId": 5,
+   "allyInstanceId": 5,
+   "teamId": 6589210,
+   "spotId": 67701,
+   "birthTurn": 0,
+   "ai": 102,
+   "aiPara": "@67701,99",
+   "resolvedBy": "ai_para"
+  }
+ ],
+ "unplaced": [
+  {
+   "instanceId": 27,
+   "teamId": 6589999,
+   "reason": "no spot id in packet or static data"
+  }
+ ],
+ "laterTurn": {
+  "laterTurnOnly": [
+   6589221,
+   6589227,
+   6589228,
+   6589233,
+   6589234,
+   6589239,
+   6589246
+  ],
+  "sameSpotsDifferentTeam": [
+   67561,
+   67562,
+   67564,
+   67568,
+   67664,
+   67667,
+   67672,
+   67673,
+   67676,
+   67702
+  ],
+  "stillThere": 8
+ },
+ "stats": {
+  "initial": 27,
+  "spawns": 18,
+  "third": 5,
+  "unplaced": 1
+ }
+}

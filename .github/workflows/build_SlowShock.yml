@@ -1,0 +1,119 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - "vSlowShock*"
+    branches:
+      - "**"
+    paths:
+      - "GFLH-SlowShock/map.py"
+      - "GFLH-SlowShock/gflmaps/**"
+      - "GFLH-SlowShock/mk/**"
+      - ".github/workflows/**"
+  pull_request:
+    branches:
+      - "**"
+    paths:
+      - "GFLH-SlowShock/map.py"
+      - "GFLH-SlowShock/gflmaps/**"
+      - "GFLH-SlowShock/mk/**"
+      - ".github/workflows/**"
+  workflow_dispatch:
+    inputs:
+      with_data:
+        description: "打包离线 GFLData（约 +120MB，关掉则运行时联网取数据）"
+        type: boolean
+        default: true
+
+# Set global permission to read-only
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build Windows x86_64
+    runs-on: windows-latest
+    env:
+      PYTHONUTF8: "1"
+      PYTHONIOENCODING: "utf-8"
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Set up Python
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r GFLH-SlowShock/mk/requirements.txt
+
+      # GFLData 不入库（1.3 GB），这里只稀疏拉一份 ch 出来，打包时会被裁成实际用到的表
+      - name: Fetch GFLData (ch only)
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.with_data }}
+        continue-on-error: true
+        shell: bash
+        run: |
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/MaaGF1/GFLData.git ../GFLData-src
+          cd ../GFLData-src
+          git sparse-checkout set ch
+          cd -
+          mkdir -p GFLH-SlowShock/GFLData
+          cp -r ../GFLData-src/ch GFLH-SlowShock/GFLData/
+
+      - name: Build with PyInstaller
+        shell: bash
+        run: |
+          if [ -f GFLH-SlowShock/GFLData/ch/stc/mission.json ]; then
+            echo "::notice::打包离线数据版"
+            python GFLH-SlowShock/mk/build_map.py
+          else
+            echo "::warning::没取到 GFLData，改为纯在线版（--no-data）"
+            python GFLH-SlowShock/mk/build_map.py --no-data
+          fi
+
+      - name: Prepare Artifact
+        shell: bash
+        run: |
+          mkdir -p upload_stage
+          cp -r GFLH-SlowShock/dist/GFLH-SlowShockMap "upload_stage/GFLH-SlowShockMap-win-x86_64"
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        with:
+          name: GFLH-SlowShockMap-win-x86_64
+          path: upload_stage
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/vSlowShock')
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3
+
+        with:
+          path: artifacts
+
+      - name: Zip Artifacts
+        run: |
+          mkdir -p release_assets
+          cd artifacts
+          for dir in */; do
+            dir=${dir%*/}
+            zip_name="${dir}.zip"
+            (cd "$dir" && zip -r "../../release_assets/$zip_name" .)
+          done
+
+      - name: Create Release
+        uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda
+        with:
+          files: release_assets/*
+          draft: false
+          prerelease: false
+          generate_release_notes: true
