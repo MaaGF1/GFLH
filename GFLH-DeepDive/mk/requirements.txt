@@ -1,0 +1,3 @@
+# requirements.txt
+pyinstaller==6.17.0
+gflzirc==0.4.4
