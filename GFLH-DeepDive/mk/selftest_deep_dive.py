@@ -10,6 +10,13 @@ import json
 import os
 import sys
 
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        if _stream.encoding and _stream.encoding.lower() not in ("utf-8", "utf8"):
+            _stream.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 MK_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(MK_DIR)
 # 抓包数据（动作顺序/、Index/index）默认放在项目根目录；
