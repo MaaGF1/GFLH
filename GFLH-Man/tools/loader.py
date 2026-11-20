@@ -75,6 +75,8 @@ def render(recipe, template):
         "__MS__": str(recipe.get("ms", 0)),
         "__LIMIT__": str(recipe.get("limit", 5000)),
         "__CD__": str(recipe.get("cd", 16)),
+        "__MODE__": json.dumps(recipe.get("md", "subtract")),
+        "__RC__": json.dumps(recipe.get("rc") or []),
     }
     optional = {
         "__DG__": json.dumps(recipe.get("dg") or []),

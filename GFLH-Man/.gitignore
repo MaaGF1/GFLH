@@ -19,3 +19,4 @@ __pycache__/
 *.dll
 GameAssembly.dll
 global-metadata.dat
+*.csv
