@@ -34,7 +34,7 @@ NAME = "GFLH-Man"
 sys.path.insert(0, TOOLS)
 from crypto_box import (seal, seal_keyed, derive_key,                    # noqa: E402
                         pe_fingerprint_file, pe_size_of_image_file)
-from pack import validate, build_recipe_from_js, load_map, SRC         # noqa: E402
+from pack import validate, build_recipe_from_js, load_map, resolve_dll, SRC   # noqa: E402
 
 
 def fail(msg):
@@ -42,19 +42,25 @@ def fail(msg):
     sys.exit(1)
 
 
-def load_recipe(local):
+def load_recipe(local, mode="subtract"):
     if local:
         if not os.path.exists(SRC):
             fail("recipe source not found: %s\n"
                  "        expected under Secret/value_modify/" % SRC)
         with open(SRC, "r", encoding="utf-8") as f:
-            recipe = build_recipe_from_js(f.read())
+            recipe = build_recipe_from_js(f.read(), mode=mode)
         print("[*] recipe source: %s (local, private)" % os.path.relpath(SRC, ROOT))
     else:
         raw = os.environ.get("GFLM_RECIPE_JSON", "").strip()
         if not raw:
-            fail("GFLM_RECIPE_JSON is missing.\n"
-                 "        a CI build must use secrets; for a local build add --local.")
+            fail("GFLM_RECIPE_JSON is missing or empty.\n"
+                 "        A CI build gets it from the repository secret of the same name.\n"
+                 "        Checklist:\n"
+                 "          - Settings > Secrets and variables > Actions > New repository secret\n"
+                 "          - the name must be exactly GFLM_RECIPE_JSON (case sensitive)\n"
+                 "          - add it to the fork that runs the workflow, not the upstream repo\n"
+                 "          - secrets are NOT passed to pull requests opened from a fork\n"
+                 "        For a local build add --local instead.")
         try:
             recipe = json.loads(raw)
         except json.JSONDecodeError as e:
@@ -70,9 +76,12 @@ def main():
     ap.add_argument("--fp", default=None, help="fingerprint hex (fingerprint mode)")
     ap.add_argument("--password", default=None, help="force passphrase mode")
     ap.add_argument("--diag", action="store_true", help="build with diagnostic output enabled")
+    ap.add_argument("--mode", default="subtract", choices=("subtract", "base", "base-pow"),
+                    help="subtract: adjust the value (default). base: scale the base value and let "
+                         "the game recompute (exact with percentage buffs). base-pow: staged test")
     args = ap.parse_args()
 
-    recipe = load_recipe(args.local)
+    recipe = load_recipe(args.local, args.mode)
 
     fp = None
     if args.fp:
@@ -81,10 +90,9 @@ def main():
         except ValueError:
             fail("--fp must be hexadecimal")
     elif args.dll:
-        if not os.path.exists(args.dll):
-            fail("not found: %s" % args.dll)
-        fp = pe_fingerprint_file(args.dll)
-        recipe["ms"] = pe_size_of_image_file(args.dll)   # mapped module size
+        dll = resolve_dll(args.dll)
+        fp = pe_fingerprint_file(dll)
+        recipe["ms"] = pe_size_of_image_file(dll)   # mapped module size
 
     if fp is None and not args.password:
         env_fp = os.environ.get("GFLM_FP", "").strip()
@@ -103,6 +111,14 @@ def main():
     else:
         pw = args.password or os.environ.get("GFLM_RECIPE_PASSWORD", "").strip()
         if not pw:
+            if os.environ.get("GITHUB_ACTIONS") or os.environ.get("CI"):
+                fail("running in CI but neither GFLM_FP nor GFLM_RECIPE_PASSWORD is set.\n"
+                     "        Add the GFLM_FP repository secret (fingerprint mode, recommended),\n"
+                     "        or set GFLM_RECIPE_PASSWORD if you really want passphrase mode.")
+            if not sys.stdin or not sys.stdin.isatty():
+                fail("no passphrase source in a non-interactive run.\n"
+                     "        Set the GFLM_FP secret (fingerprint mode, recommended) or\n"
+                     "        GFLM_RECIPE_PASSWORD, or pass --password on the command line.")
             pw = getpass.getpass("Passphrase: ")
             if pw != getpass.getpass("Repeat passphrase: "):
                 fail("the two passphrases do not match")

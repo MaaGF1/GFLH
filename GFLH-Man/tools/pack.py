@@ -72,7 +72,27 @@ def parse_block(text, var_name):
     return out
 
 
-def build_recipe_from_js(js, m=None):
+def recalc_pairs(rva, m, only_field=None):
+    """[[recalc entry offset, field index], ...] for MODE "base".
+
+    The recompute routines are named after the attribute they refresh, so the matching
+    target field is the same name with the prefix swapped: recalcPow -> realtimePow.
+    """
+    out = []
+    for name in m.get("recalc") or []:
+        if name not in rva:
+            raise SystemExit("recompute entry %r is missing from the source tables" % name)
+        field = name.replace("recalc", "realtime")
+        if field not in m["fields"]:
+            raise SystemExit("no target field for %r" % name)
+        idx = m["fields"].index(field)
+        if only_field is not None and idx != only_field:
+            continue
+        out.append([int(rva[name]), idx])
+    return out
+
+
+def build_recipe_from_js(js, m=None, mode="subtract"):
     m = m or load_map()
     rva = parse_block(js, "RVA")
     off = parse_block(js, "OFF")
@@ -89,6 +109,11 @@ def build_recipe_from_js(js, m=None):
     fm = re.search(r"FACTOR\s*:\s*\{\s*num\s*:\s*(\d+)\s*,\s*den\s*:\s*(\d+)", js)
     factor = (int(fm.group(1)) / int(fm.group(2))) if fm else 0.6
 
+    md = "base" if mode.startswith("base") else "subtract"
+    rc = []
+    if md == "base":
+        rc = recalc_pairs(rva, m, 0 if mode == "base-pow" else None)
+
     return {
         "e": entries,
         "o": fields,
@@ -99,6 +124,8 @@ def build_recipe_from_js(js, m=None):
         "limit": 5000,
         "cd": int(m.get("character_data", 16)),
         "dg": [],                       # diagnostics off by default; --diag enables them
+        "md": md,
+        "rc": rc,
         "td": list(m.get("teardown") or []),
         "ud": list(m.get("unit_destroy") or []),
     }
@@ -119,6 +146,51 @@ def validate(recipe):
     return recipe
 
 
+def locate_dll():
+    """Find GameAssembly.dll next to a running game process.
+
+    The file always sits beside the game executable, so there is no need to type the
+    full path (and no reason to copy it into the project).
+    """
+    try:
+        import psutil
+    except ImportError:
+        return None
+    for proc in psutil.process_iter(["exe"]):
+        try:
+            exe = proc.info.get("exe")
+        except Exception:
+            continue
+        if not exe:
+            continue
+        cand = os.path.join(os.path.dirname(exe), "GameAssembly.dll")
+        if os.path.exists(cand):
+            return cand
+    return None
+
+
+def resolve_dll(path):
+    """Return an existing path to the module, or raise with a useful message."""
+    if path and os.path.exists(path):
+        return path
+    tried = os.path.abspath(path) if path else "(none)"
+    found = locate_dll()
+    if found:
+        print("[*] %s not found, using the copy next to the running game:" % (path or "GameAssembly.dll"))
+        print("    %s" % found)
+        return found
+    raise SystemExit(
+        "not found: %s\n"
+        "        resolved to: %s\n"
+        "        The file sits next to the game executable, for example\n"
+        "          ...\\steamapps\\common\\GIRLS' FRONTLINE\\GameAssembly.dll\n"
+        "        Start the game first (so it can be located automatically), or pass the\n"
+        "        full path with --dll.\n"
+        "        PowerShell, to find it:\n"
+        "          Get-ChildItem 'C:\\Program Files (x86)\\Steam\\steamapps\\common' "
+        "-Recurse -Filter GameAssembly.dll" % (path or "GameAssembly.dll", tried))
+
+
 def fingerprint(args):
     if args.fp:
         try:
@@ -126,9 +198,7 @@ def fingerprint(args):
         except ValueError:
             raise SystemExit("--fp must be hexadecimal")
     if args.dll:
-        if not os.path.exists(args.dll):
-            raise SystemExit("not found: %s" % args.dll)
-        return pe_fingerprint_file(args.dll)
+        return pe_fingerprint_file(resolve_dll(args.dll))
     return None
 
 
@@ -144,6 +214,10 @@ def main():
     ap.add_argument("--from-env", action="store_true")
     ap.add_argument("--diag", action="store_true",
                     help="enable diagnostic output (prints candidate fields on each shot)")
+    ap.add_argument("--mode", default="subtract", choices=("subtract", "base", "base-pow"),
+                    help="subtract: adjust the value (default). base: scale the base value and "
+                         "let the game recompute (exact with percentage buffs). base-pow: same, "
+                         "but only for firepower (staged testing)")
     args = ap.parse_args()
 
     fps = fingerprint(args)
@@ -160,7 +234,13 @@ def main():
         recipe = json.loads(env_json)
     else:
         with open(SRC, "r", encoding="utf-8") as f:
-            recipe = build_recipe_from_js(f.read())
+            recipe = build_recipe_from_js(f.read(), mode=args.mode)
+
+    if args.mode and "md" not in recipe:
+        recipe["md"] = "base" if args.mode.startswith("base") else "subtract"
+    if recipe.get("md") == "base" and not recipe.get("rc"):
+        raise SystemExit("mode 'base' needs the recompute entries; regenerate the recipe "
+                         "from the private source (they cannot be derived from the encrypted one)")
 
     if args.factor is not None:
         recipe["f"] = round(args.factor, 6)
